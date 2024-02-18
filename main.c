@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <windows.h>
+#include "axiomlibrary.h"
 #define _WIN32_WINNT 0x050
 
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -21,9 +22,8 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-int main()
+void activateKeyhook()
 {
-    // Install the low-level keyboard & mouse hooks
     HHOOK hhkLowLevelKybd = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, 0, 0);
 
     // Keep this app running until we're told to stop
@@ -35,6 +35,9 @@ int main()
     }
 
     UnhookWindowsHookEx(hhkLowLevelKybd);
+}
 
-    return (0);
+int main()
+{
+    CallTest();
 }
