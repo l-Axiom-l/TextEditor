@@ -64,7 +64,13 @@ int callback(DWORD key, char c)
     }
 }
 
+void ActivateWindow()
+{
+    InitializeWindow(GetCommandLine(), 5);
+}
+
 int main()
 {
+    ActivateWindow();
     activateKeyhook(&callback);
 }
