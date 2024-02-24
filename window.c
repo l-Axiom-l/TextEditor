@@ -2,8 +2,10 @@
 #include "texteditor.h"
 #include <winuser.h>
 const char g_szClassName[] = "myWindowClass";
- HWND test;
 #define IDC_MAIN_EDIT 101
+int (*hupdate)(HWND h);
+char (*ptext)[1024];
+int *tindex;
 
 // Step 4: the Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -18,36 +20,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         break;
 
-    case WM_CREATE:
+    case WM_PAINT:
     {
-                HFONT hfDefault;
-        HWND hEdit;
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
 
-        hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "", 
-            WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL, 
-            0, 0, 100, 100, hwnd, (HMENU)IDC_MAIN_EDIT, GetModuleHandle(NULL), NULL);
-        if(hEdit == NULL)
-            MessageBox(hwnd, "Could not create edit box.", "Error", MB_OK | MB_ICONERROR);
+        // All painting occurs here, between BeginPaint and EndPaint.
 
-        hfDefault = GetStockObject(DEFAULT_GUI_FONT);
-        SendMessage(hEdit, WM_SETFONT, (WPARAM)hfDefault, MAKELPARAM(FALSE, 0));
-    }
-    break;
+        FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+        LPRECT rect = malloc(sizeof(LPRECT) * 2);
+        rect->bottom = ps.rcPaint.bottom;
+        rect->left = ps.rcPaint.left;
+        rect->right = ps.rcPaint.right;
+        rect->top = ps.rcPaint.top;
+        char test[1024];
+        memcpy(test, ptext, 1024);
+        int t = DrawTextExA(hdc, test, -1, rect, DT_LEFT | DT_TABSTOP | DT_TOP | DT_WORDBREAK | DT_EDITCONTROL, NULL);
 
-    case WM_DRAWITEM:
-    {
 
-    }
-
-    case WM_SIZE:
-    {
-                HWND hEdit;
-        RECT rcClient;
-
-        GetClientRect(hwnd, &rcClient);
-
-        hEdit = GetDlgItem(hwnd, IDC_MAIN_EDIT);
-        SetWindowPos(hEdit, NULL, 0, 0, rcClient.right, rcClient.bottom, SWP_NOZORDER);
+        test[*tindex] = '&';
+        test[*tindex + 1] = 'p';
+        DrawTextExA(hdc, test, -1, rect, DT_LEFT | DT_TOP | DT_WORDBREAK | DT_EDITCONTROL | DT_PREFIXONLY, NULL);
+        EndPaint(hwnd, &ps);
     }
 
     break;
@@ -58,12 +52,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-int InitializeWindow(LPSTR lpCmdLine, int nCmdShow)
+int InitializeWindow(LPSTR lpCmdLine, int nCmdShow, int* ti, char* textPointer[], int (*hc)(HWND h))
 {
+    //hupdate = hc;
+    ptext = &textPointer[0];
+    tindex = ti;
     WNDCLASSEX wc;
     HWND hwnd;
     MSG Msg;
-
     // Step 1: Registering the Window Class
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.style = 0;
@@ -97,6 +93,7 @@ int InitializeWindow(LPSTR lpCmdLine, int nCmdShow)
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
+    hc(hwnd);
 
     // Step 3: The Message Loop
     while (GetMessage(&Msg, NULL, 0, 0) > 0)

@@ -5,3 +5,5 @@ main.exe
 keyboard.exe
 textfile.txt
 window.exe
+.vscode/tasks.json
+.vscode/c_cpp_properties.json

