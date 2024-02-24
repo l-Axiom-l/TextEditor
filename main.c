@@ -2,6 +2,7 @@
 #include <windows.h>
 #include "texteditor.h"
 #include <stdbool.h>
+#include <shcore.h>
 
 char text[1024];
 int textIndex = 0;
@@ -71,14 +72,15 @@ void Save()
     OPENFILENAME ofn = {0};
     char szFile[1024];
     memcpy(szFile, "File.txt", 9);
+    ofn.hwndOwner = thisWindow;
     ofn.lStructSize = sizeof(OPENFILENAME);
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
     ofn.lpstrFilter = "*.txt";
     ofn.nFilterIndex = 0;
     ofn.lpstrInitialDir = "Documents";
-    ofn.Flags = OFN_EXPLORER;
-
+    ofn.Flags = OFN_EXPLORER | OFN_NONETWORKBUTTON;
+    Sleep(200);
     if (GetSaveFileNameA(&ofn) == TRUE)
     {
         FILE *fi = fopen(ofn.lpstrFile, "w");
