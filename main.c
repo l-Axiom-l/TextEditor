@@ -164,6 +164,14 @@ int UPDATE()
     {
         isSuspended = GetForegroundWindow() == thisWindow ? FALSE : TRUE;
         inserting = textIndex == textLenght ? FALSE : TRUE;
+        if(!IsWindow(thisWindow) && thisWindow != 0x0)
+        {
+            printf("Window is closed\n");
+            FreeConsole();
+            ExitProcess(0);
+            //ExitThread(0);
+            break;
+        }
         Sleep(100);
     }
 
@@ -173,8 +181,8 @@ int UPDATE()
 int main()
 {
     HANDLE handle = CreateThread(NULL, 0, ActivateWindow, NULL, 0, NULL);
-    HANDLE ac = CreateThread(NULL, 0, UPDATE, NULL, 0, NULL);
     HWND hWnd = GetConsoleWindow();
     ShowWindow(hWnd, SW_HIDE);
+    HANDLE ac = CreateThread(NULL, 0, UPDATE, NULL, 0, NULL);
     activateKeyhook(&callback, &isSuspended);
 }
