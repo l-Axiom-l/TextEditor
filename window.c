@@ -76,7 +76,7 @@ int InitializeWindow(LPSTR lpCmdLine, int nCmdShow, int* ti, char* textPointer[]
 
     if (!RegisterClassEx(&wc))
     {
-        MessageBox(NULL, "Window Registration Failed!", "Error!",
+        MessageBox(NULL, "window registration failed", "Error",
                    MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
@@ -86,7 +86,7 @@ int InitializeWindow(LPSTR lpCmdLine, int nCmdShow, int* ti, char* textPointer[]
 
     if (hwnd == NULL)
     {
-        MessageBox(NULL, "Window Creation Failed!", "Error!",
+        MessageBox(NULL, "window creation failed", "Error",
                    MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
